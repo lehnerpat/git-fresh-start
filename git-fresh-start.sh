@@ -35,8 +35,7 @@ if [ "$#" -eq 1 ]; then
     cd "$1"
 fi
 
-branches=$(git branch --color=never)
-orig_branch=$(echo "$branches" | grep --color=never "^\* " | sed "s/^\* //")
+orig_branch=$(git symbolic-ref HEAD 2>/dev/null | sed "s@^refs/heads/@@")
 
 if [ "$COMMON_ROOT" -eq 1 ]; then
     echo "Creating new (empty) common root commit"
@@ -46,7 +45,7 @@ if [ "$COMMON_ROOT" -eq 1 ]; then
     git commit --allow-empty -m "Initial commit" > /dev/null
 fi
 
-echo "$branches" | sed "s/^\* //" | while read branch; do
+git for-each-ref "--format=%(refname)" refs/heads | sed "s@^refs/heads/@@" | while read branch; do
     echo "Transplanting branch $branch"
     newbranch="${branch}_new"
     if [ "$COMMON_ROOT" -eq 1 ]; then
